@@ -1,0 +1,265 @@
+@use "sass:math";
+@include mapMixin($spacings, "gap", grid-gap);
+
+/*
+grid-gap-eket megoldottuk ezzel a mapMixin-vel csináltunk grid-gap-eket!! 
+ugye az @include-val!!!! 
+
+Hogyan tudunk grid-rendszereket csinálni automatikusan 
+-> 
+nagyon fontos!!!!!! @for-val 
+minden ami ilyen, hogy for, include, each azelött egy @-jel kell!!!! 
+utána meg az i, mint a value,props, key, clsName stb. az előtt meg kell egy $
+1. @for 
+2. $i 
+3. from (meghatározunk egy számot, hogy mettől) through (szán, hogy meddig)
+4. megcsináljuk a class-t, ahol az i-lesz, hogy hány col lesz pl. ha az i 5-nél tart, akkor grid-col-#{$i} -> grid-col-5 lefordítva 
+5. csak simán megadjuk, hogy display: grid; legyen!!
+5. grid-template-columns, fontos, hogy repeat legyen, ahol megadjuk a repeat első paraméternek az i-t!!!!!, második meg 1fr lesz 
+->
+@for $i from 2 through 12 {
+    .grid-col-#{$i} {
+        display: grid;
+        grid-template-columns: repeat($i, 1fr);
+    }
+}
+
+Különböző nézeteken meg olyanokat csinálni(valamilyen width-nél), hogy a 8-as az bemegy 4-be, utána meg 2-be tehát felezünk 
+de ez nem lesz ilyen egyszerű!!!!!! 
+és ezeket a media query-ket a grid-template-columns alá kell csinálni nesting-elve 
+minden körben felezni akarunk tehét az első media query amikor lg-és width-ben i/2 
+csak a páratlan számoknál nem lehet felezni ezért ezt majd fel kell kerekíteni a Math.round-val, hogy egész számot kapjunk 
+
+fontos, hogy scss-ben ez máshogy van mint pl. JavaScript-ben 
+
+azt kell csinálni, elöször, hogy @use "sass:math"; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ezt legfelülre meg is csináltuk!!! 
+de viszont ez, hogy math.ceil(i/2, 1fr) az ilyen formában nem müködik 
+@media screen and (max-width: map-get($sizes, "lg")) {
+            grid-template-columns: repeat(math.ceil($i/2), 1fr);
+        }
+ez így nem, de viszont kaptunk recommendations, hogy math.div(i, 2) vagy calc(i/2)!!!!
+így lesz jó 
+-> 
+grid-template-columns: repeat(math.ceil(math.div($i, 2)), 1fr);!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@for $i from 2 through 12 {
+    .grid-col-#{$i} {
+        display: grid;
+        grid-template-columns: repeat($i, 1fr);
+
+        @media screen and (max-width: map-get($sizes, "lg")) {
+            grid-template-columns: repeat(math.ceil(math.div($i, 2)), 1fr);
+        }
+    }
+}
+
+és akkor ez az egész így lett lefordítva 
+.grid-col-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+@media screen and (max-width: 1080px) {
+    .grid-col-2 {
+        grid-template-columns: repeat(1, 1fr);
+    }
+}
+
+.grid-col-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+@media screen and (max-width: 1080px) {
+    .grid-col-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+és akkor ez mindegyiknél van, hogy 1080px-en bemegy fele annyiba, kivéve a páratlanoknál, mert ott felfele kerekítetünk és eggyel többe!!!
+lehet, hogy ez az lg, ami 1080px, az kicsit sok, hogy már bemenjen a felébe!! lehet, hogy egy md elég lenne 
+
+Meg itt azért nem jó, hogy a grid-col-3-nak még 3-nak kellett volna maradnia (mármint jobb lett volna úgy)!! 
+jelenleg azt csináltuk, 2-3-4 osztottunk mert, nem jó ha nagyobbal, most megnézzük, hogy van-e értelme 3-val osztani 
+xs-nél meg mindegyik bemegy 1-fr-be 
+így néz ki jelenleg
+-> 
+@for $i from 2 through 12 {
+    .grid-col-#{$i} {
+        display: grid;
+        grid-template-columns: repeat($i, 1fr);
+
+        @media screen and (max-width: map-get($sizes, "lg")) {
+            grid-template-columns: repeat(math.ceil(math.div($i, 2)), 1fr);
+        }
+
+        @media screen and (max-width: map-get($sizes, "md")) {
+            grid-template-columns: repeat(math.ceil(math.div($i, 3)), 1fr);
+        }
+
+        @media screen and (max-width: map-get($sizes, "sm")) {
+            grid-template-columns: repeat(math.ceil(math.div($i, 4)), 1fr);
+        }
+
+        @media screen and (max-width: map-get($sizes, "xs")) {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+Mindegyiknél jó, csak fura, hogy a 3-nál bemegy 2-be, kell egy olyan kitétel, hogyha páratlan alapból a szám (i)
+és ha ez meg páros lesz, akkor ne müködjön -> (math.ceil(math.div($i, 3))
+mert rosszul nézett ki, amikor bement a 3-as 2-esbe!! és kapja meg az eredetit!!! 
+
+and media query-n belül 
+1. létrehoztunk egy fr változót -> $fr:math.ceil(math.div($i, 2))
+2. csinálunk egy if-et ahol megnézzük, hogy az i az páratlan-e, ezt modulo-val tudjuk megcsinálni, méhozzá 2-es modulózással
+    ha egy marad akkor páros, ha nulla, akkor pedig páratlan @if($i%2 == 0)
+        ha páros, akkor meg kell adni neki, hogy felezze le -> grid-template-columns: repeat($fr, 1fr);
+        ha pedig páratlan, akkor meg maradjon az eredeti érték tehát az $i -> grid-template-columns: repeat($i, 1fr);
+
+@for $i from 2 through 12 {
+    .grid-col-#{$i} {
+        display: grid;
+        grid-template-columns: repeat($i, 1fr);
+
+        @media screen and (max-width: map-get($sizes, "lg")) {
+            $fr:math.ceil(math.div($i, 2));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat($i, 1fr);
+            }
+        }
+
+fontos a színtaktika @if és @else!!!!! meg $fr:math.ceil(math.div($i, 2)); változó létrehozása!!!!!!!!!!!!!!!!!!!!!!!!!!!
+meg az md és sm-nél is megadjuk ugyanezt
+@for $i from 2 through 12 {
+    .grid-col-#{$i} {
+        display: grid;
+        grid-template-columns: repeat($i, 1fr);
+
+        @media screen and (max-width: map-get($sizes, "lg")) {
+            $fr:math.ceil(math.div($i, 2));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat($i, 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "md")) {
+            $fr:math.ceil(math.div($i, 3));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat($i, 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "sm")) {
+            $fr:math.ceil(math.div($i, 4));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat($i, 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "xs")) {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+jó, mert nem ment be 2-esbe, csak a legkisebbnél eggyesbe, csak jó lenne, hogy elöbb bemenne, mert az oldalon már kicsit kilogtak a betűk 
+a grid-col-3-as dologból, meg az biztos, nem lesz jó, hogy egy 7-es grid csak a legvégén megy be eggyesbe egyből 7-esből
+
+csak a legnagyobbnál marad az i, az összes többinél nem marad 
+@for $i from 2 through 12 {
+    .grid-col-#{$i} {
+        display: grid;
+        grid-template-columns: repeat($i, 1fr);
+
+        @media screen and (max-width: map-get($sizes, "lg")) {
+            $fr:math.ceil(math.div($i, 2));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat($i, 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "md")) {
+            $fr:math.ceil(math.div($i, 3));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat(math.round(math.div($i, 3)), 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "sm")) {
+            $fr:math.ceil(math.div($i, 4));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat(math.round(math.div($i, 4)), 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "xs")) {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+étmegyünk az inputs.scss-re!!! 
+*/
+
+@for $i from 2 through 12 {
+    .grid-col-#{$i} {
+        display: grid;
+        grid-template-columns: repeat($i, 1fr);
+
+        @media screen and (max-width: map-get($sizes, "lg")) {
+            $fr:math.ceil(math.div($i, 2));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat($i, 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "md")) {
+            $fr:math.ceil(math.div($i, 3));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat(math.round(math.div($i, 3)), 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "sm")) {
+            $fr:math.ceil(math.div($i, 4));
+
+            @if($i%2 == 0) {
+                grid-template-columns: repeat($fr, 1fr);
+            } @else {
+                grid-template-columns: repeat(math.round(math.div($i, 4)), 1fr);
+            }
+        }
+
+        @media screen and (max-width: map-get($sizes, "xs")) {
+            grid-template-columns: 1fr;
+        }
+    }
+}

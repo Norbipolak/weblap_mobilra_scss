@@ -1,0 +1,27 @@
+$colors:(
+    "light-beige": #f1ebe9,
+    "beige": #e2ddd9,
+    "light-brown": #db9457,
+    "light-grey": #edeeed,
+    "light-grey-2": #f6f6f7,
+    "dark-grey": #242424
+);
+
+$sizes:(
+    "xs": 640px,
+    "sm": 720px,
+    "md": 920px,
+    "lg": 1080px,
+    "xl": 1280px
+);
+
+$spacings:(
+    "xs": 3px,
+    "sm": 5px,
+    "md": 10px,
+    "lg": 15px,
+    "xl": 20px,
+    "xxl": 30px
+);
+
+$textTransforms:uppercase, lowercase, capitalize, none, full-width, full-size-kana;

@@ -1,0 +1,128 @@
+@import "flex.scss";
+@import "grid.scss";
+@import "init.scss";
+@import "inputs.scss";
+@import "mixins.scss";
+@import "settings.scss";
+@import "variables.scss";
+
+/*
+itt a style.scss-ben mindent importáltunk, de nem csak importálni tudunk, bár ez a jobb módszer, hanem
+a use parancsot használjuk!!! 
+
+pl. ha itt a mixins.scss-t azt úgy hívjuk be, hogy @use "mixins.scss"; nem úgy, hogy @import "mixins.scss";
+
+és akkor itt szeretnénk mindenféle mixin-eket készíteni az alapján amit csináltunk a mixins.scss-ben 
+tehát a mixin-eket meghívni 
+
+és ha itt nekünk @use "mixins.scss" van 
+akkor ide tudjuk írni, hogy mixins.mapMixin() -> mert ugye ez a neve annak a függvénynek, amit a mixins-ben készítettünk 
+és fontos, hogy előtte kell az @include, ez minden függvénymeghíváskor kell 
+
+@include mixins.mapMixin();
+meghívásnál a mapMixin vár 3 paraméter 
+1. $map (valamelyik map, amit készítettünk a varables.scss-ben pl. $colors, $sizes, $spacings)
+2. $clsName (ezt mi adjuk meg, ahogy akarjuk, de azért tükrözze, hogy miről van szó)
+3. $props (hogy milyen csss tulajdonságról van szó pl. max-width, background-color, color, padding vagy bármi)
+
+és akkor így meg tudjuk hívni itt a mapMixin()-t, hogy megadjuk neki ezeket a dolgokat és csinál class-okat ez alapján 
+
+@include mixins.mapMixin($colors, "color", color);
+
+vagy mondhatjuk azt a mixins.scss, amikor importáljuk a use-val, hogy as valami pl. m 
+és akkor itt behívásnál már nem a mixins-re fogunk hívatkozni hanem az m-re 
+-> 
+@use "mixins.scss" helyett
+-> 
+@use "mixins.scss" as m;
+
+
+és akkor hívatkozásnál nem 
+@include mixins.mapMixin($colors, "color", color); 
+hanem 
+-> 
+@include m.mapMixin($colors, "color", color);
+
+ez is egy megoldás, de a legprofesszionálisabb megoldás 
+Hogy a @use-t azt keverem a @forward-val 
+
+csinálunk egy bootstrap.scss-t 
+és ott forward-oljuk a scss mappánkat 
+
+@forward "mixins.scss";
+@forward "init.scss";
+@forward "variables.scss";
+@forward "settings.scss";
+@forward "grid.scss";
+@forward "flex.scss";
+@forward "inputs.scss";
+
+itt forward-nál nem lehet alias-t csinálni, tehát nem müködik ez, hogy @forward "mixins.scss" as m;
+és a style.scss-ben meg nem @import-álom a dolgokat, hanem csak ezt a bootstrap.scss-et use-olom 
+
+@use "bootstrap.scss";
+
+de itt már lehet alias-t használni 
+
+@use "bootstrap.scss" as b;
+és akkor itt úgy tudjuk megcsinálni a dolgokat, hogy b 
+
+@include b.mapMixin($colors, "color", color);
+
+és akkor ez így, müködik, de mi van akkor ha forward-oljuk a dolgokat a style.scss-ben a bootsrap-en keresztül 
+forward ez olyan, mintha átküldenénk a dolgokat a másik fájlra 
+
+de mi van akkor ha a settings-ben szeretnénk hozzáférni egy változóhoz, ami a variables-ben van 
+
+settings-ben ki szeretnénk írni a $colors-ot, amit csináltunk a variables-ben 
+ugye a @debug-val lehet itt kiírni a konzol-ra!!! 
+
+settings.scss-ben -> 
+@debug $colors;
+
+sass scss/style.scss ezt kell a terminálba írni, úgy mint a js-nél a node valami.js
+
+azt fogja mondani, hogy undefined variables $colors!!!!! 
+
+Ennek meg ez a hátránya, mert ha importáljuk ide a style.scss-be a dolgokat 
+@import "flex.scss";
+@import "grid.scss";
+@import "init.scss";
+stb. 
+
+Ilyenkor meg az összes fájlban, amit importáltunk, pl. az init.scss-ben, grid, flex. stb az összes dolgait elérik 
+és így lényegesen egyszerűbb, mert azt tudjuk mondani a settings.scss-ben, hogy felhasználjuk a $colors-t, ami a variables-ben van
+
+itt meg ha szükségem van erre a $colors-re, akkor azt kell mondani a settings.scss-ben, hogy @use "variables.scss";
+szóval az import az lényeges egyszerűebb, mert ott alapból elérünk mindent!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+és nem kell use-olni minden egyes fájlban
+
+bootstrap arra van kitalálva, hogy belerakjuk az összes ilyen dolgot egybe 
+@forward "mixins.scss";
+@forward "init.scss";
+@forward "variables.scss";
+@forward "settings.scss";
+stb. 
+és egy nagy fájlban hozunk létre mindent 
+
+és akkor ez csak a style.scss-ben érhető el
+sokkal jobb az import az a lényeg!!!! 
+
+úgy a legjobb, ahogy csináljuk, hogy van több scss fájlunk, amik be vannak importálva a style.scss-ben amit majd lefordítunk a style.css-be 
+ami átláthatatlan lesz, mert mindent oda fordítunk, de az a jó, hogy azzal nem dolgozunk, csak itt a külön scss fájlokban
+
+sass scss/style.scss css/style.css
+ezzek meg mindent fordítunk a css-be, minden szabályt, amit létrehoztunk eddig az a style.css-ben lesz, de ami a fájlba nem írunk majd 
+be semmit, meg nem keresünk itt semmit csak a különálló scss fájlokból, ez a css lesz link-elve a html-be, mert ugye scss fájlt nem tud olvasni!
+
+nagyon fontos!!!!!!!!!!!!!!!!!!!!
+-> 
+szóval ha be van importálva minden a style.scss-be akkor tökmindegy, hogy hol csinálunk valamit, meg hol hívjuk meg, melyik scss fájlba
+a fordításnál mindig sass style.scss style.css kell!!!!!!!!!!!!!!!!!
+
+
+*******************************************************************************************************************
+létrehozunk egy keretrendeszert a settings.scss-ben meghívjuk a mapMixin-t 
+
+
+*/

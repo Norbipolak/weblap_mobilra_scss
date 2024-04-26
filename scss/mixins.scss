@@ -1,0 +1,69 @@
+@mixin mapMixin($map, $clsName, $prop) {
+    @each $key, $value in $map {
+        .#{$clsName}-#{$key} {
+            #{$prop}:$value
+        }
+    }
+}
+
+/*
+És akkor ezt meg lehet hívni a az includes-val valahol és tud nekünk osztályokat csinálni 
+
+@include mapMixin(("red": "#FF0000", "blue": "#0000FF"), "color", "color");
+
+így fognak kinézni az osztályok
+-> 
+.color-red {
+  color: #FF0000;
+}
+
+.color-blue {
+  color: #0000FF;
+}
+
+@mixin mapMixin($map, $clsName, $prop) {
+    @each $key, $value in $map {
+        .#{$clsName}-#{$key} {
+            #{$prop}:#{$value}
+        }
+    }
+}
+
+Színtatktikaolag még annyi, hogy nem kell a value-nál a #{$value}, hanem elég csak az, hogy $value
+
+@mixin mapMixin($map, $clsName, $prop) {
+    @each $key, $value in $map {
+        .#{$clsName}-#{$key} {
+            #{$prop}:$value
+        }
+    }
+}
+
+A variables.scss-ben meg vannnak változóink, ebben meg van egy mapMixin-ünk, amivel el tudunk készíteni mindenféle változókat 
+variables-ben az osztályoknak a színtaktikája 
+-> 
+1. $
+2. neve az osztálynak pl. colors
+3. :
+4. ()
+5. () ebbe jöhetnek az kulcs-értékpárok, úgy, hogy az első a kulcs egy string az érték meg simán az érték 
+
+ez olyan mint egy objektum : kell közéjük és , -vel választjuk el a párokat!!! 
+
+$colors:(
+    "dark-grey": #242424,
+    stb.
+);
+*/
+
+@mixin listMixin($list, $clsName, $prop) {
+    @each $value in $list {
+        .#{$clsName}-#{$value} {
+            #{$prop}:$value;
+        }
+    }
+}
+/*
+ez vár egy listát!! 
+fontos, hogy annak csak egy value-je és nincsen kulcsa, mert ez egy lista lesz, mint egy tömb, nem egy objektum 
+*/

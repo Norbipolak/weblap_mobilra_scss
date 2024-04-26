@@ -1,0 +1,335 @@
+@include mapMixin($colors, "color", color);
+@include mapmixin($colors, "bg", background-color);
+@include mapMixin($spacings, "m", margin);
+@include mapMixin($spacings, "ml", margin-left);
+@include mapMixin($spacings, "mr", margin-right);
+@include mapMixin($spacings, "mt", margin-top);
+@include mapMixin($spacings, "mb", margin-bottom);
+
+@include mapMixin($spacings, "p", padding);
+@include mapMixin($spacings, "pl", padding-left);
+@include mapMixin($spacings, "pr", padding-right);
+@include mapMixin($spacings, "pt", padding-top);
+@include mapMixin($spacings, "pb", padding-bottom);
+
+@include listMixin($textTransforms, "transform", text-transform);
+
+/*
+de viszont, ahol kettőt kellene beálítani, mint pl. a my-nél ahol kell egy margin-top meg egy margin-bottom is azt itt nem lehet!!!!!!!!!!
+csak ezzel az sima @each-es megoldással, map-val nem 
+    .my-#{$key} {
+        margin-top: $value;
+        margin-bottom: $value;
+    }
+
+szóval ezeket meg kell majd hagyni a többit ki lehet törölni, mert teljesen ugyanazt megcsináltuk itt a map-vel!! 
+
+a container-eket valahogy úgy kellene megoldani, hogy ne max-width legyen, hanem úgy, hogy a container xl az egy bizonyos width-en bemegy lg-re
+és így tovább, ezt a media-query-vel!!!! 
+tehát a container-xl, amikor elérjük a 1280px-t akkor menjen be container-lg-be, amikor elérjük a 1080px-t akkor menjen be container-md-be 
+és így tovább ameddig az xs-nél a width: 100% lesz!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ennek nincsen automatizmusa, meg kell csinálni az összeset, szóval nem lehet így each-vel megcsinálni!!!! 
+itt nagyon fontos a mapGet!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+map-get az vár két dolgot 
+1. egy map-et, hogy melyik map-ból szeretnénk valamit megszerezni 
+2. "xl", tehát, hogy melyik értéket!!! pontosabban annak a kulcsát 
+-> 
+ map-get($map: , $key: )
+
+.container-xl {
+
+    width:map-get($sizes, "xl");
+
+    @media screen and (max-width: map-get($sizes, "xl")) {
+        width: map-get($sizes, "lg");
+    }
+}
+
+ez így ilyen lesz lefordítva 
+->
+.container-xl {
+    width: 1280px;
+}
+@media screen and (max-width: 1280px) {
+    .container-xl {
+        width: 1080px;
+    }
+}
+fontos, hogy amikor lefordítja css-re, akkor itt nincsen nesting, szóval külön van a két dolog!!!!! 
+scss-ben meg van ott egy {} belül megtudjuk csinálni, hogy mekkora legyen a container-xl meg, hogy mire menjen be media query-vel 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+fontos, hogy itt a scss-ben nem adunk meg értéket, minthogy 1080px, mert ez már le van mentve egy változóban a variables-ben,
+ezért csak onnan megszerezzük a get-map segítségével!!!!!!!!!!!!!!!!!!!!!!
+ugyanígy a get-map segítségével szerezzük meg azt az értéket amire bemegy, tehát az lg-t!!!! 
+
+és akkor így lehet tovább folytatni, hogy a container-xl az bemegy lg-ről md-re, majd md-ről sm-re stb..
+
+.container-xl {
+
+    width:map-get($sizes, "xl");
+
+    @media screen and (max-width: map-get($sizes, "xl")) {
+        width: map-get($sizes, "lg");
+    }
+
+    @media screen and (max-width: map-get($sizes, "lg")) {
+        width: map-get($sizes, "md");
+    }
+
+    @media screen and (max-width: map-get($sizes, "md")) {
+        width: map-get($sizes, "sm");
+    }
+
+    @media screen and (max-width: get-map($sizes, "xs")) {
+        width: map-get($sizes, "xs");
+    }
+}
+
+max-width-et adtunk meg a media query-ben és amikor csináltuk az új osztályt ott meg sima height-ot 
+így fog kinézni css-ben 
+
+container-xl {
+    width: 1280px;
+}
+@media screen and(max-width: 1280px) {
+    container-xl {
+        width: 1080px;
+    }
+}
+@media and screen (max-width: 1080px) {
+    container-xl {
+        width: 920px;
+    }
+}
+és, így tovább 
+fontos, hogy ezeket mind megadjuk a container-xl-nek, mert ha egy elem megkapja ezt a class-t, akkor egészen 
+mobilnézetig lehet ezt csökkenteni 
+
+container-lg-vel teljesen ugyanezt kell csinálni, csak ott eggyel kevesebb lesz, mert kisebbről indulunk 
+
+azért jobb így scss-ben, mert eggyel kevesebb sort írunk 
+scss-ben 
+1. meghatározzuk, hogy melyik class-ról van szó .container-lg 
+2. és akkor media query-ben ezt nem kell mert ugye nesting-elve van 
+    és csak azt írjuk oda, hogy mekkora width-re menjen be!!!!!!!!!!!!!!!!!!!
+
+    @media screen and (max-width: map-get($sizes, "xl")) {
+        width: map-get($sizes, "lg");
+    }
+
+css-ben 
+1. meghatározzuk, a class-t és ott adunk neki egy width-et 
+2. külön megcsináljuk a media-query-t és ott viszont meg kell határozni, hogy melyik class-ról van szó a media-query--ben
+
+container-xl {
+    width: 1280px;
+}
+@media screen and(max-width: 1280px) {
+    container-xl {
+        width: 1080px;
+    }
+}
+
+Nagyon fontos!!!! 
+amikor elértük az utolsót (xs) akkor bemegy a width: 100%, tehát mindig ez lesz a legutolsó kitétel, hogy a legkisebbnél a width: 100% lesz  
+*/
+
+.container-xl {
+
+    width:map-get($sizes, "xl");
+    margin: auto;
+
+    @media screen and (max-width: map-get($sizes, "xl")) {
+        width: map-get($sizes, "lg");
+    }
+
+    @media screen and (max-width: map-get($sizes, "lg")) {
+        width: map-get($sizes, "md");
+    }
+
+    @media screen and (max-width: map-get($sizes, "md")) {
+        width: map-get($sizes, "sm");
+    }
+
+    @media screen and (max-width: map-get($sizes, "sm")) {
+        width: map-get($sizes, "xs");
+    }
+
+    @media screen and (max-width : map-get($sizes, "xs")) {
+        width: 100%;
+    }
+}
+
+.container-lg {
+    width: map-get($sizes, "lg");
+    margin: auto;
+
+    @media screen and (max-width: map-get($sizes, "lg")) {
+        width: map-get($sizes, "md");
+    }
+
+    @media screen and (max-width: map-get($sizes, "md")) {
+        width: map-get($sizes, "sm");
+    }
+
+    @media screen and (max-width: map-get($sizes, "sm")) {
+        width: map-get($sizes, "xs");
+    }
+
+    @media screen and (max-width: map-get($sizes, "xs")) {
+        width: 100%;
+    }
+}
+
+.container-md {
+    width: map-get($sizes, "md");
+    margin: auto;
+
+    @media screen and (max-width: map-get($sizes, "md")) {
+        width: map-get($sizes, "sm");
+    }
+
+    @media screen and (max-width: map-get($sizes, "sm")) {
+        width: map-get($sizes, "sm");
+    }
+
+    @media screen and (max-width: map-get($sizes, "xs")) {
+        width: 100%;
+    }
+}
+
+.container-sm {
+    width: map-get($sizes, "sm");
+    margin: auto;
+
+    @media screen and (max-width: map-get($sizes, "sm")) {
+        width: map-get($sizes, "xs");
+    }
+
+    @media screen and (max-width: map-get($sizes, "xs")) {
+        width: 100%;
+    }
+}
+
+.container-xs {
+    width: map-get($sizes, "xs");
+    margin: auto;
+
+    @media screen and (max-width: map-get($sizes, "xs")) {
+        width: 100%;
+    }
+}
+
+@each $key, $value in $sizes {
+    .container-#{$key} {
+        margin: auto;
+    }
+}
+/*
+de ezt a margin: auto-t inkább meg kell adni a legelején 
+.container-xl {
+
+    width:map-get($sizes, "xl");
+    margin: auto;
+
+    @media screen and (max-width: map-get($sizes, "xl")) {
+        width: map-get($sizes, "lg");
+    }
+...
+*/
+
+/*
+meg lehet nézni, hogy müködik, mert a weblapunkon vannak container-eink
+müködik, csak ugye nincsen margin: auto 
+ezért mindegyik loop-ban megadjuk a margin: auto-t!
+->
+@each $key, $value in $sizes {
+    .container-#{$key} {
+        margin: auto;
+    }
+}
+átmegyünk a grid.scss-re!! 
+*/
+
+
+/***********************************************************************************************
+Előz óraiak, ezek már nem kellenek, mert megoldunk mindent a mapMixin-vel gyorsabban
+*/
+@each $key, $value in $colors {
+    .color-#{$key} {
+        color: $value;
+    }
+
+    .bg-#{$key} {
+        background-color: $value;
+    }
+}
+
+@each $key, $value in $sizes {
+    .container-#{$key} {
+        max-width: $value;
+    }
+}
+
+@each $key, $value in $spacings {
+    .m-#{$key} {
+        margin: $value;
+    }
+
+    .p-#{$key} {
+        padding: $value;
+    }
+
+    .mr-#{$key} {
+        margin-right: $value;
+    }
+
+    .ml-#{$key} {
+        margin-left: $value;
+    }
+
+    .mt-#{$key} {
+        margin-top: $value;
+    }
+
+    .mb-#{$key} {
+        margin-bottom: $value;
+    }
+
+    .pl-#{$key} {
+        padding-left: $value;
+    }
+
+    .pr-#{$key} {
+        padding-right: $value;
+    }
+
+    .pt-#{$key} {
+        padding-top: $value;
+    }
+
+    .pb-#{$key} {
+        padding-bottom: $value;
+    }
+
+    .mx-#{$key} {
+        margin-left: $value;
+        margin-right: $value;
+    }
+
+    .my-#{$key} {
+        margin-top: $value;
+        margin-bottom: $value;
+    }
+
+    .px-#{$key} {
+        padding-left: $value;
+        padding-right: $value;
+    }
+
+    .py-#{$key} {
+        padding-top: $value;
+        padding-bottom: $value;
+    }
+}

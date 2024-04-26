@@ -1,0 +1,114 @@
+/*
+Minden input mező meg fog kapni valamilyen szabályt
+ezt ugye css-ben nem kell jelölni sehogy, csak beírjuk, hogy input 
+itt scss-ben viszont kell egy %-jel !!!!!!!!!!!!!!!!!!
+
+%input:focus {
+    outline: 0;
+}
+ez ugye arra kell, hogy ne kapja meg azt a fekete border-t, amit az input-ok, select-ek megkapnak ha beléjük van kattintva, tehát focus-ban 
+vannak 
+
+nagyon fontos!!!! 
+ha azt akarjuk, hogy megkapja a button is amit beírtunk az input-ba, akkor kell az @extends!!!!!
+@extend %input;
+.brown-bordered-btn, .white-btn, .black-btn {
+    @extend %input;
+}
+tehát mindegyik button amit készítettünk az @extend 
+
+ezek nagyon fontosak, hogy @extends, @forward, @use, @if, @include @import @each @for @while!!! 
+
+és akkor itt is fel lehet használni a dolgokat, amiket csináltunk a values-ban a map-get-vel!!!
+pl. background-color: map-get($colors, "light-brown"); úgy mint a sima css-ben a var(--light-brown); 
+csak ott egy :root van és egybe van minden, itt meg külön kell csinálni és a map-get-vel meg kell adni a map-ot meg kulcsot 
+
+padding-nél azért problematikus a button-nél, mert a fenti-lenti jobb-bal padding az nem ugyanolyan
+azért azt nehéz automatizálni de erre csinálunk input-sm-et, input-md-t stb. 
+és akkor ezt nem itt minden eggyes button-nél csináljuk meg hanem majd ezeket az osztályokat fogjuk megadni a html elemeknek, buttonöknek
+
+és ha lefordítjuk ezt, akkor így meg tudjuk adni
+-> 
+<button class="brown-bordered-btn input-lg">we love coffee</button>
+
+ugye ennek a button-nek kell egy uppercase 
+megnézzük, hogy milyen értékeket tudunk adni a text-transform-nak 
+csinálunk belőle egy listát az összes értékkel
+de ugye fontos, hogy egy mixin-vel végigmenjünk rajta 
+mixins.scss-ben megcsináljuk 
+-> 
+@mixin listMixin($list, $clsName, $prop) {
+    @each $value in $list {
+        .#{$clsName}-#{$value} {
+            #{$prop}:$value;
+        }
+    }
+}
+
+variables.sccs-ben csináltunk egy listát 
+-> 
+$textTransforms:uppercase, lowercase, capitalize, none, full-width, full-size-kana;
+
+settingsbe meg behívjuk!!! 
+@include listMixin($textTransforms, "transform", text-transform);
+és ha lefordítjuk, akkor az összesből lesz osztályunk 
+-> 
+.transform-uppercase {
+    text-transform: uppercase;
+}
+
+.transform-lowercase {
+    text-transform: lowercase;
+}
+
+.transform-capitalize {
+    text-transform: capitalize;
+}
+
+html elemnek megadjuk, ami ebből kell és akkor nem kell a brown-btn-nek ezt sem külön megadni, mert már van egy osztály rá!! 
+<button class="brown-bordered-btn input-lg transform-uppercase">we love coffee</button>
+
+Nagyon fontos!!!!! 
+itt is tudunk nestingelni és akkor nem kell külön kiírni, hogy újra a .brown-bordered-btn: hover (:parent-selector)
+hanem egybe 
+.brown-bordered-btn {
+    border: 1px solid map-get($colors, "light-brown");
+    background-color: transparent;
+
+    :hover{
+        background-color: map-get($colors, "light-brown");
+        color: white;
+    }
+}
+->
+*/
+
+%input:focus {
+    outline: 0;
+}
+
+.input-sm {
+    padding: 5px 8px;
+}
+
+.input-md {
+    padding: 10px 14px;
+}
+
+.input-lg {
+    padding: 15px 20px;
+}
+
+.brown-bordered-btn, .white-btn, .black-btn {
+    @extend %input;
+}
+
+.brown-bordered-btn {
+    border: 1px solid map-get($colors, "light-brown");
+    background-color: transparent;
+
+    :hover{
+        background-color: map-get($colors, "light-brown");
+        color: white;
+    }
+}
